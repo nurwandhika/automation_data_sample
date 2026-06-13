@@ -1,4 +1,4 @@
-# MatchMade Data Reconciler
+# Automate Data Sample
 
 Simple tool to reconcile two CSVs with guided column matching.
 
