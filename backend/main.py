@@ -174,6 +174,18 @@ def get_column_profile(profile, column_name):
 
 def normalize_match_rules(match_rules, core_profile, swi_profile):
     normalized_rules = []
+    text_modes = {
+        "contains",
+        "starts_with",
+        "ends_with",
+        "core_contains_swi",
+        "swi_contains_core",
+        "core_starts_with_swi",
+        "swi_starts_with_core",
+        "core_ends_with_swi",
+        "swi_ends_with_core",
+    }
+    allowed_value_types = {"text", "integer", "date"}
 
     for index, rule in enumerate(match_rules, start=1):
         core_column_name = rule.get("core_column", "").strip()
@@ -186,18 +198,45 @@ def normalize_match_rules(match_rules, core_profile, swi_profile):
 
         core_column = get_column_profile(core_profile, core_column_name)
         swi_column = get_column_profile(swi_profile, swi_column_name)
+        core_value_type = rule.get("core_value_type", rule.get("value_type", core_column["value_type"]))
+        swi_value_type = rule.get("swi_value_type", rule.get("value_type", swi_column["value_type"]))
 
-        if core_column["value_type"] != swi_column["value_type"]:
+        if core_value_type not in allowed_value_types:
+            raise HTTPException(status_code=400, detail=f"Match rule {index} uses an unsupported File A data type override.")
+
+        if swi_value_type not in allowed_value_types:
+            raise HTTPException(status_code=400, detail=f"Match rule {index} uses an unsupported File B data type override.")
+
+        if core_value_type != swi_value_type:
             raise HTTPException(
                 status_code=400,
                 detail=f"Match rule {index} must use the same data type on both sides."
             )
 
-        if match_mode == "integer_tolerance" and core_column["value_type"] != "integer":
+        if match_mode in text_modes and core_value_type != "text":
+            raise HTTPException(status_code=400, detail=f"Match rule {index} text rule only works for text columns.")
+
+        if match_mode == "integer_tolerance" and core_value_type != "integer":
             raise HTTPException(status_code=400, detail=f"Match rule {index} tolerance mode only works for integer columns.")
 
-        if match_mode == "date_tolerance" and core_column["value_type"] != "date":
+        if match_mode == "date_tolerance" and core_value_type != "date":
             raise HTTPException(status_code=400, detail=f"Match rule {index} date interval mode only works for date columns.")
+
+        if match_mode == "contains":
+            match_mode = rule.get("match_direction", "core_contains_swi")
+
+        if match_mode not in {
+            "exact",
+            "integer_tolerance",
+            "date_tolerance",
+            "core_contains_swi",
+            "swi_contains_core",
+            "core_starts_with_swi",
+            "swi_starts_with_core",
+            "core_ends_with_swi",
+            "swi_ends_with_core",
+        }:
+            raise HTTPException(status_code=400, detail=f"Match rule {index} uses an unsupported match mode.")
 
         try:
             tolerance = int(tolerance_value)
@@ -212,7 +251,8 @@ def normalize_match_rules(match_rules, core_profile, swi_profile):
             "swi_column": swi_column_name,
             "match_mode": match_mode,
             "tolerance": tolerance,
-            "value_type": core_column["value_type"],
+            "value_type": core_value_type,
+            "swi_value_type": swi_value_type,
         })
 
     if not normalized_rules:

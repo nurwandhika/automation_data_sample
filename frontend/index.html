@@ -1,343 +1,630 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MatchMade Data Reconciler</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Reconciler</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            background:
-                radial-gradient(circle at top left, rgba(251, 191, 36, 0.18), transparent 30%),
-                radial-gradient(circle at top right, rgba(14, 165, 233, 0.16), transparent 32%),
-                linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
-        }
+      body {
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(251, 191, 36, 0.18),
+            transparent 30%
+          ),
+          radial-gradient(
+            circle at top right,
+            rgba(14, 165, 233, 0.16),
+            transparent 32%
+          ),
+          linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+      }
 
-        .glass-panel {
-            backdrop-filter: blur(18px);
-            background: rgba(255, 255, 255, 0.86);
-        }
+      .glass-panel {
+        backdrop-filter: blur(18px);
+        background: rgba(255, 255, 255, 0.86);
+      }
     </style>
-</head>
-<body class="min-h-screen flex items-start justify-center px-4 py-6 md:px-6 md:py-8 text-slate-900">
-    <div class="glass-panel w-full max-w-[1600px] rounded-[2rem] shadow-[0_30px_80px_rgba(15,23,42,0.12)] p-5 md:p-8 lg:p-10 border border-white/70">
-        <div class="grid gap-8 2xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] items-start">
-            <div class="space-y-6">
-                <div class="space-y-3">
-                    <div class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">
-                        Guided CSV matching
-                    </div>
-                    <h1 class="text-4xl md:text-5xl font-black tracking-tight text-slate-900">Choose the right match column before reconciliation.</h1>
-                    <p class="max-w-2xl text-base md:text-lg text-slate-600">
-                        Upload two CSV files, scan their columns and detected data types, review the suggested pairing, then confirm the columns you want to match.
+  </head>
+  <body
+    class="min-h-screen flex items-start justify-center px-4 py-6 md:px-6 md:py-8 text-slate-900"
+  >
+    <div
+      class="glass-panel w-full max-w-[1600px] rounded-[2rem] shadow-[0_30px_80px_rgba(15,23,42,0.12)] p-5 md:p-8 lg:p-10 border border-white/70"
+    >
+      <div
+        class="grid gap-8 2xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] items-start"
+      >
+        <div class="space-y-6">
+          <div class="space-y-3">
+            <div
+              class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-amber-700"
+            >
+              Guided CSV matching
+            </div>
+            <h1
+              class="text-4xl md:text-5xl font-black tracking-tight text-slate-900"
+            >
+              Choose the right match column before reconciliation.
+            </h1>
+            <p class="max-w-2xl text-base md:text-lg text-slate-600">
+              Upload two CSV files, scan their columns and detected data types,
+              review the suggested pairing, then confirm the columns you want to
+              match.
+            </p>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-3">
+            <div
+              class="rounded-2xl bg-white/80 border border-slate-200 p-4 shadow-sm"
+            >
+              <p
+                class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"
+              >
+                Step 1
+              </p>
+              <p class="mt-2 font-semibold text-slate-900">Upload both CSVs</p>
+              <p class="mt-1 text-sm text-slate-600">
+                The app inspects all columns and shows the schema.
+              </p>
+            </div>
+            <div
+              class="rounded-2xl bg-white/80 border border-slate-200 p-4 shadow-sm"
+            >
+              <p
+                class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"
+              >
+                Step 2
+              </p>
+              <p class="mt-2 font-semibold text-slate-900">
+                Review suggestions
+              </p>
+              <p class="mt-1 text-sm text-slate-600">
+                Likely matching columns are ranked for you.
+              </p>
+            </div>
+            <div
+              class="rounded-2xl bg-white/80 border border-slate-200 p-4 shadow-sm"
+            >
+              <p
+                class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"
+              >
+                Step 3
+              </p>
+              <p class="mt-2 font-semibold text-slate-900">Run the match</p>
+              <p class="mt-1 text-sm text-slate-600">
+                Generate the reconciliation report once confirmed.
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-[1.75rem] border border-slate-200 bg-white p-5 md:p-6 shadow-sm space-y-5"
+          >
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">
+                  1. Upload files
+                </h2>
+                <p class="text-sm text-slate-500">
+                  Use CSV files only. The app will suggest a matching column
+                  pair after analysis.
+                </p>
+              </div>
+              <div
+                id="analysisBadge"
+                class="hidden rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200"
+              >
+                Analysis complete
+              </div>
+            </div>
+
+            <form id="uploadForm" class="space-y-5">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label
+                  class="group rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/70 p-5 transition hover:border-sky-400 hover:bg-sky-50/70"
+                >
+                  <span class="block text-sm font-semibold text-slate-700"
+                    >File A</span
+                  >
+                  <input
+                    type="file"
+                    id="coreFile"
+                    accept=".csv"
+                    class="mt-4 w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-sky-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-sky-800 hover:file:bg-sky-200"
+                  />
+                  <p id="coreFileName" class="mt-3 text-sm text-slate-500">
+                    No file selected
+                  </p>
+                </label>
+
+                <label
+                  class="group rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/70 p-5 transition hover:border-indigo-400 hover:bg-indigo-50/70"
+                >
+                  <span class="block text-sm font-semibold text-slate-700"
+                    >File B</span
+                  >
+                  <input
+                    type="file"
+                    id="swiFile"
+                    accept=".csv"
+                    class="mt-4 w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-indigo-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-800 hover:file:bg-indigo-200"
+                  />
+                  <p id="swiFileName" class="mt-3 text-sm text-slate-500">
+                    No file selected
+                  </p>
+                </label>
+              </div>
+
+              <div class="grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  id="analyzeBtn"
+                  class="inline-flex w-full items-center justify-center rounded-2xl bg-slate-900 px-5 py-4 font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300"
+                >
+                  <span id="analyzeText">Analyze columns</span>
+                  <svg
+                    id="analyzeSpinner"
+                    class="ml-3 hidden h-5 w-5 animate-spin text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                </button>
+
+                <button
+                  type="submit"
+                  id="submitBtn"
+                  disabled
+                  class="inline-flex w-full items-center justify-center rounded-2xl bg-slate-300 px-5 py-4 font-semibold text-slate-500 transition cursor-not-allowed"
+                >
+                  <span id="btnText">Run reconciliation</span>
+                  <svg
+                    id="loadingSpinner"
+                    class="ml-3 hidden h-5 w-5 animate-spin text-slate-700"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+
+              <p
+                id="statusText"
+                class="hidden rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600"
+              ></p>
+
+              <div
+                id="analysisPanel"
+                class="hidden space-y-5 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 md:p-5"
+              >
+                <div class="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_280px]">
+                  <div
+                    class="rounded-2xl border border-amber-200 bg-amber-50 p-4"
+                  >
+                    <p class="text-sm font-semibold text-amber-900">
+                      Suggested pair
                     </p>
+                    <div
+                      id="topSuggestion"
+                      class="mt-1 rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-800"
+                    ></div>
+                    <p
+                      id="suggestionReason"
+                      class="mt-1 text-sm text-amber-800"
+                    ></p>
+                    <div
+                      id="suggestionList"
+                      class="mt-3 space-y-2 text-sm text-amber-900"
+                    ></div>
+                  </div>
+
+                  <div
+                    class="rounded-2xl bg-white p-4 shadow-sm border border-slate-200"
+                  >
+                    <label
+                      class="block text-sm font-semibold text-slate-700 mb-2"
+                      >Output format</label
+                    >
+                    <select
+                      id="formatType"
+                      class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-4 focus:ring-slate-100"
+                    >
+                      <option value="split_tables">
+                        Split tables (top and bottom)
+                      </option>
+                      <option value="interleaved">
+                        Interleaved (alternating rows)
+                      </option>
+                    </select>
+                    <p class="mt-3 text-xs leading-5 text-slate-500">
+                      Choose the matching layout before generating the file.
+                    </p>
+                  </div>
                 </div>
 
-                <div class="grid gap-4 md:grid-cols-3">
-                    <div class="rounded-2xl bg-white/80 border border-slate-200 p-4 shadow-sm">
-                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Step 1</p>
-                        <p class="mt-2 font-semibold text-slate-900">Upload both CSVs</p>
-                        <p class="mt-1 text-sm text-slate-600">The app inspects all columns and shows the schema.</p>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                >
+                  <div
+                    class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
+                  >
+                    <div>
+                      <h3 class="text-lg md:text-xl font-bold text-slate-900">
+                        2. Match columns
+                      </h3>
+                      <p class="text-sm text-slate-600">
+                        Add one or more column pairs. Only columns with the same
+                        detected data type can be paired.
+                      </p>
                     </div>
-                    <div class="rounded-2xl bg-white/80 border border-slate-200 p-4 shadow-sm">
-                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Step 2</p>
-                        <p class="mt-2 font-semibold text-slate-900">Review suggestions</p>
-                        <p class="mt-1 text-sm text-slate-600">Likely matching columns are ranked for you.</p>
-                    </div>
-                    <div class="rounded-2xl bg-white/80 border border-slate-200 p-4 shadow-sm">
-                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Step 3</p>
-                        <p class="mt-2 font-semibold text-slate-900">Run the match</p>
-                        <p class="mt-1 text-sm text-slate-600">Generate the reconciliation report once confirmed.</p>
-                    </div>
+                    <button
+                      type="button"
+                      id="addRuleBtn"
+                      class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    >
+                      Add pair
+                    </button>
+                  </div>
+
+                  <div id="matchRulesList" class="mt-4 space-y-4"></div>
+
+                  <p class="mt-4 text-xs leading-5 text-slate-500">
+                    Integer pairs can use an interval measured in integer units.
+                    Date pairs can use an interval measured in days.
+                  </p>
                 </div>
-
-                <div class="rounded-[1.75rem] border border-slate-200 bg-white p-5 md:p-6 shadow-sm space-y-5">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <h2 class="text-xl md:text-2xl font-bold text-slate-900">1. Upload files</h2>
-                            <p class="text-sm text-slate-500">Use CSV files only. The app will suggest a matching column pair after analysis.</p>
-                        </div>
-                        <div id="analysisBadge" class="hidden rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
-                            Analysis complete
-                        </div>
-                    </div>
-
-                    <form id="uploadForm" class="space-y-5">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label class="group rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/70 p-5 transition hover:border-sky-400 hover:bg-sky-50/70">
-                                <span class="block text-sm font-semibold text-slate-700">File A</span>
-                                <input type="file" id="coreFile" accept=".csv" class="mt-4 w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-sky-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-sky-800 hover:file:bg-sky-200">
-                                <p id="coreFileName" class="mt-3 text-sm text-slate-500">No file selected</p>
-                            </label>
-
-                            <label class="group rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/70 p-5 transition hover:border-indigo-400 hover:bg-indigo-50/70">
-                                <span class="block text-sm font-semibold text-slate-700">File B</span>
-                                <input type="file" id="swiFile" accept=".csv" class="mt-4 w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-indigo-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-800 hover:file:bg-indigo-200">
-                                <p id="swiFileName" class="mt-3 text-sm text-slate-500">No file selected</p>
-                            </label>
-                        </div>
-
-                        <div class="grid gap-3 sm:grid-cols-2">
-                            <button type="button" id="analyzeBtn" class="inline-flex w-full items-center justify-center rounded-2xl bg-slate-900 px-5 py-4 font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300">
-                                <span id="analyzeText">Analyze columns</span>
-                                <svg id="analyzeSpinner" class="ml-3 hidden h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </button>
-
-                            <button type="submit" id="submitBtn" disabled class="inline-flex w-full items-center justify-center rounded-2xl bg-slate-300 px-5 py-4 font-semibold text-slate-500 transition cursor-not-allowed">
-                                <span id="btnText">Run reconciliation</span>
-                                <svg id="loadingSpinner" class="ml-3 hidden h-5 w-5 animate-spin text-slate-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </button>
-                        </div>
-
-                        <p id="statusText" class="hidden rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600"></p>
-
-                        <div id="analysisPanel" class="hidden space-y-5 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 md:p-5">
-                            <div class="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_280px]">
-                                <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                                    <p class="text-sm font-semibold text-amber-900">Suggested pair</p>
-                                    <div id="topSuggestion" class="mt-1 rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-800"></div>
-                                    <p id="suggestionReason" class="mt-1 text-sm text-amber-800"></p>
-                                    <div id="suggestionList" class="mt-3 space-y-2 text-sm text-amber-900"></div>
-                                </div>
-
-                                <div class="rounded-2xl bg-white p-4 shadow-sm border border-slate-200">
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Output format</label>
-                                    <select id="formatType" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-4 focus:ring-slate-100">
-                                        <option value="split_tables">Split tables (top and bottom)</option>
-                                        <option value="interleaved">Interleaved (alternating rows)</option>
-                                    </select>
-                                    <p class="mt-3 text-xs leading-5 text-slate-500">Choose the matching layout before generating the file.</p>
-                                </div>
-                            </div>
-
-                            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                                    <div>
-                                        <h3 class="text-lg md:text-xl font-bold text-slate-900">2. Match columns</h3>
-                                        <p class="text-sm text-slate-600">Add one or more column pairs. Only columns with the same detected data type can be paired.</p>
-                                    </div>
-                                    <button type="button" id="addRuleBtn" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">
-                                        Add pair
-                                    </button>
-                                </div>
-
-                                <div id="matchRulesList" class="mt-4 space-y-4"></div>
-
-                                <p class="mt-4 text-xs leading-5 text-slate-500">Integer pairs can use an interval measured in integer units. Date pairs can use an interval measured in days.</p>
-                            </div>
-
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <div class="rounded-[1.75rem] border border-slate-200 bg-slate-950 p-6 text-slate-100 shadow-lg">
-                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">What the app checks</p>
-                    <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-300">
-                        <li>Column names and sample values from both CSVs.</li>
-                        <li>Detected value types such as text, number, date and boolean.</li>
-                        <li>Suggested match columns ranked by similarity.</li>
-                        <li>Your final confirmation before generating the report.</li>
-                    </ul>
-                </div>
-
-                <div class="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-                    <p class="text-sm font-semibold text-slate-900">How to use it</p>
-                    <p class="mt-2 text-sm leading-6 text-slate-600">Select File A and File B, click analyze, review the suggested match pair, then adjust the dropdowns if needed and generate the reconciliation file.</p>
-                </div>
-            </div>
+              </div>
+            </form>
+          </div>
         </div>
+
+        <div class="space-y-4">
+          <div
+            class="rounded-[1.75rem] border border-slate-200 bg-slate-950 p-6 text-slate-100 shadow-lg"
+          >
+            <p
+              class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400"
+            >
+              What the app checks
+            </p>
+            <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+              <li>Column names and sample values from both CSVs.</li>
+              <li>
+                Detected value types such as text, number, date and boolean.
+              </li>
+              <li>Suggested match columns ranked by similarity.</li>
+              <li>Your final confirmation before generating the report.</li>
+            </ul>
+          </div>
+
+          <div
+            class="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm"
+          >
+            <p class="text-sm font-semibold text-slate-900">How to use it</p>
+            <p class="mt-2 text-sm leading-6 text-slate-600">
+              Select File A and File B, click analyze, review the suggested
+              match pair, then adjust the dropdowns if needed and generate the
+              reconciliation file.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-        const apiBase = window.APP_API_BASE || "";
-        const backendAvailable = Boolean(apiBase);
-        const state = {
-            analysis: null,
-            ruleCounter: 0,
-        };
+      const apiBase =
+        window.APP_API_BASE ||
+        (location.protocol === "file:" ||
+        location.hostname === "localhost" ||
+        location.hostname === "127.0.0.1"
+          ? "http://127.0.0.1:8000"
+          : "");
+      const backendAvailable = Boolean(apiBase);
+      const state = {
+        analysis: null,
+        ruleCounter: 0,
+      };
 
-        const coreFileInput = document.getElementById('coreFile');
-        const swiFileInput = document.getElementById('swiFile');
-        const coreFileName = document.getElementById('coreFileName');
-        const swiFileName = document.getElementById('swiFileName');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const analyzeText = document.getElementById('analyzeText');
-        const analyzeSpinner = document.getElementById('analyzeSpinner');
-        const submitBtn = document.getElementById('submitBtn');
-        const btnText = document.getElementById('btnText');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const uploadForm = document.getElementById('uploadForm');
-        const analysisPanel = document.getElementById('analysisPanel');
-        const analysisBadge = document.getElementById('analysisBadge');
-        const statusText = document.getElementById('statusText');
-        const topSuggestion = document.getElementById('topSuggestion');
-        const suggestionReason = document.getElementById('suggestionReason');
-        const suggestionList = document.getElementById('suggestionList');
-        const matchRulesList = document.getElementById('matchRulesList');
-        const addRuleBtn = document.getElementById('addRuleBtn');
-        const formatType = document.getElementById('formatType');
+      const coreFileInput = document.getElementById("coreFile");
+      const swiFileInput = document.getElementById("swiFile");
+      const coreFileName = document.getElementById("coreFileName");
+      const swiFileName = document.getElementById("swiFileName");
+      const analyzeBtn = document.getElementById("analyzeBtn");
+      const analyzeText = document.getElementById("analyzeText");
+      const analyzeSpinner = document.getElementById("analyzeSpinner");
+      const submitBtn = document.getElementById("submitBtn");
+      const btnText = document.getElementById("btnText");
+      const loadingSpinner = document.getElementById("loadingSpinner");
+      const uploadForm = document.getElementById("uploadForm");
+      const analysisPanel = document.getElementById("analysisPanel");
+      const analysisBadge = document.getElementById("analysisBadge");
+      const statusText = document.getElementById("statusText");
+      const topSuggestion = document.getElementById("topSuggestion");
+      const suggestionReason = document.getElementById("suggestionReason");
+      const suggestionList = document.getElementById("suggestionList");
+      const matchRulesList = document.getElementById("matchRulesList");
+      const addRuleBtn = document.getElementById("addRuleBtn");
+      const formatType = document.getElementById("formatType");
 
-        function setStatus(message, tone = 'neutral') {
-            statusText.textContent = message;
-            statusText.className = 'rounded-2xl border px-4 py-3 text-sm';
-            statusText.classList.remove('hidden');
+      function setStatus(message, tone = "neutral") {
+        statusText.textContent = message;
+        statusText.className = "rounded-2xl border px-4 py-3 text-sm";
+        statusText.classList.remove("hidden");
 
-            if (tone === 'error') {
-                statusText.classList.add('border-rose-200', 'bg-rose-50', 'text-rose-700');
-            } else if (tone === 'success') {
-                statusText.classList.add('border-emerald-200', 'bg-emerald-50', 'text-emerald-700');
-            } else {
-                statusText.classList.add('border-slate-200', 'bg-slate-50', 'text-slate-600');
-            }
+        if (tone === "error") {
+          statusText.classList.add(
+            "border-rose-200",
+            "bg-rose-50",
+            "text-rose-700",
+          );
+        } else if (tone === "success") {
+          statusText.classList.add(
+            "border-emerald-200",
+            "bg-emerald-50",
+            "text-emerald-700",
+          );
+        } else {
+          statusText.classList.add(
+            "border-slate-200",
+            "bg-slate-50",
+            "text-slate-600",
+          );
+        }
+      }
+
+      function clearStatus() {
+        statusText.classList.add("hidden");
+        statusText.textContent = "";
+      }
+
+      function formatTypeLabel(typeName) {
+        return (typeName || "blank").replace(/_/g, " ");
+      }
+
+      function getCoreColumns() {
+        return state.analysis ? state.analysis.files.core.columns : [];
+      }
+
+      function getSwiColumns() {
+        return state.analysis ? state.analysis.files.swi.columns : [];
+      }
+
+      function getColumnType(fileKey, columnName) {
+        const columns = fileKey === "core" ? getCoreColumns() : getSwiColumns();
+        const column = columns.find((item) => item.name === columnName);
+        return column ? column.value_type : "";
+      }
+
+      function getCompatibleSwiColumns(typeName) {
+        if (typeName === "text") {
+          return getSwiColumns();
         }
 
-        function clearStatus() {
-            statusText.classList.add('hidden');
-            statusText.textContent = '';
+        return getSwiColumns().filter(
+          (column) => column.value_type === typeName,
+        );
+      }
+
+      function getTypeOptions() {
+        return [
+          { value: "auto", label: "Auto (use selected column type)" },
+          { value: "text", label: "Text" },
+          { value: "integer", label: "Integer" },
+          { value: "date", label: "Date" },
+        ];
+      }
+
+      function getRuleModes(typeName) {
+        if (typeName === "integer") {
+          return [
+            { value: "exact", label: "Exact match" },
+            { value: "integer_tolerance", label: "Within interval" },
+          ];
         }
 
-        function formatTypeLabel(typeName) {
-            return (typeName || 'blank').replace(/_/g, ' ');
+        if (typeName === "date") {
+          return [
+            { value: "exact", label: "Exact match" },
+            { value: "date_tolerance", label: "Within days" },
+          ];
         }
 
-        function getCoreColumns() {
-            return state.analysis ? state.analysis.files.core.columns : [];
+        return [
+          { value: "exact", label: "Exact match" },
+          { value: "core_contains_swi", label: "File A contains File B" },
+          { value: "swi_contains_core", label: "File B contains File A" },
+          { value: "core_starts_with_swi", label: "File A starts with File B" },
+          { value: "swi_starts_with_core", label: "File B starts with File A" },
+          { value: "core_ends_with_swi", label: "File A ends with File B" },
+          { value: "swi_ends_with_core", label: "File B ends with File A" },
+        ];
+      }
+
+      function getIntervalLabel(typeName) {
+        return typeName === "date" ? "Days" : "Interval";
+      }
+
+      function renderSuggestions(suggestions) {
+        const topSuggestionItem = suggestions.length ? suggestions[0] : null;
+
+        if (topSuggestionItem) {
+          topSuggestion.textContent = `Recommended: ${topSuggestionItem.core_column} ↔ ${topSuggestionItem.swi_column}`;
+          suggestionReason.textContent = `${topSuggestionItem.reason} · score ${Math.round(topSuggestionItem.score * 100)}%`;
+        } else {
+          topSuggestion.textContent = "No strong suggestion found";
+          suggestionReason.textContent =
+            "Pick the best pair manually from the dropdowns.";
         }
 
-        function getSwiColumns() {
-            return state.analysis ? state.analysis.files.swi.columns : [];
+        suggestionList.innerHTML =
+          (suggestions || [])
+            .slice(0, 5)
+            .map((item, index) => {
+              return `<div>${index + 1}. ${item.core_column} ↔ ${item.swi_column} <span class="font-semibold">(${Math.round(item.score * 100)}%)</span></div>`;
+            })
+            .join("") || "<div>No ranked suggestions available.</div>";
+      }
+
+      function setSubmitEnabled(enabled) {
+        submitBtn.disabled = !enabled;
+        if (enabled) {
+          submitBtn.className =
+            "inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-5 py-4 font-semibold text-white transition hover:bg-emerald-500";
+          btnText.textContent = "Run reconciliation";
+        } else {
+          submitBtn.className =
+            "inline-flex w-full items-center justify-center rounded-2xl bg-slate-300 px-5 py-4 font-semibold text-slate-500 transition cursor-not-allowed";
+          btnText.textContent = "Run reconciliation";
+        }
+      }
+
+      if (!backendAvailable) {
+        setStatus(
+          "This live site is the published web page only. Connect the backend to enable analysis and reconciliation.",
+          "neutral",
+        );
+      }
+
+      function syncRuleRow(row, preserveSwiValue = true) {
+        const coreSelect = row.querySelector(".core-select");
+        const typeSelect = row.querySelector(".type-select");
+        const modeSelect = row.querySelector(".mode-select");
+        const intervalWrap = row.querySelector(".interval-wrap");
+        const intervalInput = row.querySelector(".interval-input");
+        const intervalLabel = row.querySelector(".interval-label");
+        const swiSelect = row.querySelector(".swi-select");
+        const typeBadge = row.querySelector(".type-badge");
+        const errorText = row.querySelector(".row-error");
+        const selectedCoreColumn =
+          getCoreColumns().find((column) => column.name === coreSelect.value) ||
+          getCoreColumns()[0];
+        const selectedCoreType = selectedCoreColumn
+          ? selectedCoreColumn.value_type
+          : "text";
+        const selectedOverrideType = typeSelect?.value || "auto";
+        const selectedType =
+          selectedOverrideType === "auto"
+            ? selectedCoreType
+            : selectedOverrideType;
+        const compatibleSwiColumns = getCompatibleSwiColumns(selectedType);
+
+        typeBadge.textContent = selectedType
+          ? `Type: ${formatTypeLabel(selectedType)}${selectedOverrideType === "auto" ? "" : " (override)"}`
+          : "Type unavailable";
+        row.dataset.matchType = selectedType || "";
+
+        const modeOptions = getRuleModes(selectedType);
+        const currentMode = modeOptions.some(
+          (option) => option.value === modeSelect.value,
+        )
+          ? modeSelect.value
+          : modeOptions[0].value;
+
+        modeSelect.innerHTML = modeOptions
+          .map(
+            (option) =>
+              `<option value="${option.value}">${option.label}</option>`,
+          )
+          .join("");
+        modeSelect.value = currentMode;
+
+        intervalWrap.classList.toggle(
+          "hidden",
+          currentMode === "exact" ||
+            currentMode === "core_contains_swi" ||
+            currentMode === "swi_contains_core" ||
+            currentMode === "core_starts_with_swi" ||
+            currentMode === "swi_starts_with_core" ||
+            currentMode === "core_ends_with_swi" ||
+            currentMode === "swi_ends_with_core",
+        );
+        intervalLabel.textContent = getIntervalLabel(selectedType);
+
+        if (selectedType === "integer" || selectedType === "date") {
+          intervalInput.min = "0";
+          intervalInput.step = "1";
+          if (!intervalInput.value) {
+            intervalInput.value = "1";
+          }
+        } else {
+          intervalInput.value = "0";
         }
 
-        function getColumnType(fileKey, columnName) {
-            const columns = fileKey === 'core' ? getCoreColumns() : getSwiColumns();
-            const column = columns.find((item) => item.name === columnName);
-            return column ? column.value_type : '';
+        if (selectedOverrideType !== "auto") {
+          errorText.classList.add("hidden");
+          errorText.textContent = `Using manual type override: ${formatTypeLabel(selectedType)}.`;
         }
 
-        function getCompatibleSwiColumns(typeName) {
-            return getSwiColumns().filter((column) => column.value_type === typeName);
+        const previousSwiValue = preserveSwiValue ? swiSelect.value : "";
+        swiSelect.innerHTML = compatibleSwiColumns.length
+          ? compatibleSwiColumns
+              .map(
+                (column) =>
+                  `<option value="${column.name}">${column.name} · ${formatTypeLabel(column.value_type)}</option>`,
+              )
+              .join("")
+          : '<option value="">No matching columns available</option>';
+
+        if (compatibleSwiColumns.length) {
+          const restoredSwiValue = compatibleSwiColumns.some(
+            (column) => column.name === previousSwiValue,
+          )
+            ? previousSwiValue
+            : compatibleSwiColumns[0].name;
+          swiSelect.value = restoredSwiValue;
+          errorText.classList.add("hidden");
+          errorText.textContent = "";
+        } else {
+          swiSelect.value = "";
+          errorText.textContent = `No File B column matches the ${formatTypeLabel(selectedType)} type.`;
+          errorText.classList.remove("hidden");
         }
+      }
 
-        function getRuleModes(typeName) {
-            if (typeName === 'integer') {
-                return [
-                    { value: 'exact', label: 'Exact match' },
-                    { value: 'integer_tolerance', label: 'Within interval' },
-                ];
-            }
+      function createRuleRow(config = {}) {
+        const coreColumns = getCoreColumns();
+        const firstCore = coreColumns[0];
+        const initialCoreValue = config.core_column || firstCore?.name || "";
+        const initialCore =
+          coreColumns.find((column) => column.name === initialCoreValue) ||
+          firstCore;
+        const rowId = `rule-${(state.ruleCounter += 1)}`;
 
-            if (typeName === 'date') {
-                return [
-                    { value: 'exact', label: 'Exact match' },
-                    { value: 'date_tolerance', label: 'Within days' },
-                ];
-            }
-
-            return [{ value: 'exact', label: 'Exact match' }];
-        }
-
-        function getIntervalLabel(typeName) {
-            return typeName === 'date' ? 'Days' : 'Interval';
-        }
-
-        function renderSuggestions(suggestions) {
-            const topSuggestionItem = suggestions.length ? suggestions[0] : null;
-
-            if (topSuggestionItem) {
-                topSuggestion.textContent = `Recommended: ${topSuggestionItem.core_column} ↔ ${topSuggestionItem.swi_column}`;
-                suggestionReason.textContent = `${topSuggestionItem.reason} · score ${Math.round(topSuggestionItem.score * 100)}%`;
-            } else {
-                topSuggestion.textContent = 'No strong suggestion found';
-                suggestionReason.textContent = 'Pick the best pair manually from the dropdowns.';
-            }
-
-            suggestionList.innerHTML = (suggestions || []).slice(0, 5).map((item, index) => {
-                return `<div>${index + 1}. ${item.core_column} ↔ ${item.swi_column} <span class="font-semibold">(${Math.round(item.score * 100)}%)</span></div>`;
-            }).join('') || '<div>No ranked suggestions available.</div>';
-        }
-
-        function setSubmitEnabled(enabled) {
-            submitBtn.disabled = !enabled;
-            if (enabled) {
-                submitBtn.className = 'inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-5 py-4 font-semibold text-white transition hover:bg-emerald-500';
-                btnText.textContent = 'Run reconciliation';
-            } else {
-                submitBtn.className = 'inline-flex w-full items-center justify-center rounded-2xl bg-slate-300 px-5 py-4 font-semibold text-slate-500 transition cursor-not-allowed';
-                btnText.textContent = 'Run reconciliation';
-            }
-        }
-
-        if (!backendAvailable) {
-            setStatus('This live site is the published web page only. Connect the backend to enable analysis and reconciliation.', 'neutral');
-        }
-
-        function syncRuleRow(row, preserveSwiValue = true) {
-            const coreSelect = row.querySelector('.core-select');
-            const modeSelect = row.querySelector('.mode-select');
-            const intervalWrap = row.querySelector('.interval-wrap');
-            const intervalInput = row.querySelector('.interval-input');
-            const intervalLabel = row.querySelector('.interval-label');
-            const swiSelect = row.querySelector('.swi-select');
-            const typeBadge = row.querySelector('.type-badge');
-            const errorText = row.querySelector('.row-error');
-            const selectedCoreColumn = getCoreColumns().find((column) => column.name === coreSelect.value) || getCoreColumns()[0];
-            const selectedType = selectedCoreColumn ? selectedCoreColumn.value_type : 'text';
-            const compatibleSwiColumns = getCompatibleSwiColumns(selectedType);
-
-            typeBadge.textContent = selectedType ? `Type: ${formatTypeLabel(selectedType)}` : 'Type unavailable';
-            row.dataset.matchType = selectedType || '';
-
-            const modeOptions = getRuleModes(selectedType);
-            const currentMode = modeOptions.some((option) => option.value === modeSelect.value) ? modeSelect.value : modeOptions[0].value;
-
-            modeSelect.innerHTML = modeOptions.map((option) => `<option value="${option.value}">${option.label}</option>`).join('');
-            modeSelect.value = currentMode;
-
-            intervalWrap.classList.toggle('hidden', currentMode === 'exact');
-            intervalLabel.textContent = getIntervalLabel(selectedType);
-
-            if (selectedType === 'integer' || selectedType === 'date') {
-                intervalInput.min = '0';
-                intervalInput.step = '1';
-                if (!intervalInput.value) {
-                    intervalInput.value = '1';
-                }
-            } else {
-                intervalInput.value = '0';
-            }
-
-            const previousSwiValue = preserveSwiValue ? swiSelect.value : '';
-            swiSelect.innerHTML = compatibleSwiColumns.length
-                ? compatibleSwiColumns.map((column) => `<option value="${column.name}">${column.name} · ${formatTypeLabel(column.value_type)}</option>`).join('')
-                : '<option value="">No matching columns available</option>';
-
-            if (compatibleSwiColumns.length) {
-                const restoredSwiValue = compatibleSwiColumns.some((column) => column.name === previousSwiValue)
-                    ? previousSwiValue
-                    : compatibleSwiColumns[0].name;
-                swiSelect.value = restoredSwiValue;
-                errorText.classList.add('hidden');
-                errorText.textContent = '';
-            } else {
-                swiSelect.value = '';
-                errorText.textContent = `No File B column matches the ${formatTypeLabel(selectedType)} type.`;
-                errorText.classList.remove('hidden');
-            }
-        }
-
-        function createRuleRow(config = {}) {
-            const coreColumns = getCoreColumns();
-            const firstCore = coreColumns[0];
-            const initialCoreValue = config.core_column || firstCore?.name || '';
-            const initialCore = coreColumns.find((column) => column.name === initialCoreValue) || firstCore;
-            const rowId = `rule-${state.ruleCounter += 1}`;
-
-            const row = document.createElement('div');
-            row.className = 'match-rule-row rounded-2xl border border-slate-200 bg-slate-50 p-4';
-            row.dataset.ruleId = rowId;
-            row.innerHTML = `
+        const row = document.createElement("div");
+        row.className =
+          "match-rule-row rounded-2xl border border-slate-200 bg-slate-50 p-4";
+        row.dataset.ruleId = rowId;
+        row.innerHTML = `
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Pair ${state.ruleCounter}</p>
@@ -350,6 +637,10 @@
                         <label class="block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">File A column</label>
                         <select class="core-select mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-4 focus:ring-sky-100"></select>
                     </div>
+                  <div>
+                    <label class="block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Treat as</label>
+                    <select class="type-select mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-4 focus:ring-slate-100"></select>
+                  </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Rule</label>
                         <select class="mode-select mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-4 focus:ring-slate-100"></select>
@@ -366,255 +657,332 @@
                 <p class="row-error mt-3 hidden rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700"></p>
             `;
 
-            const coreSelect = row.querySelector('.core-select');
-            const modeSelect = row.querySelector('.mode-select');
-            const swiSelect = row.querySelector('.swi-select');
-            const removeButton = row.querySelector('.remove-rule-btn');
+        const coreSelect = row.querySelector(".core-select");
+        const typeSelect = row.querySelector(".type-select");
+        const modeSelect = row.querySelector(".mode-select");
+        const swiSelect = row.querySelector(".swi-select");
+        const removeButton = row.querySelector(".remove-rule-btn");
 
-            coreSelect.innerHTML = coreColumns.map((column) => {
-                const selected = column.name === initialCore?.name ? 'selected' : '';
-                return `<option value="${column.name}" ${selected}>${column.name} · ${formatTypeLabel(column.value_type)}</option>`;
-            }).join('');
+        coreSelect.innerHTML = coreColumns
+          .map((column) => {
+            const selected =
+              column.name === initialCore?.name ? "selected" : "";
+            return `<option value="${column.name}" ${selected}>${column.name} · ${formatTypeLabel(column.value_type)}</option>`;
+          })
+          .join("");
 
-            coreSelect.value = initialCore?.name || '';
+        coreSelect.value = initialCore?.name || "";
 
-            modeSelect.innerHTML = '';
-            swiSelect.innerHTML = '';
+        typeSelect.innerHTML = getTypeOptions()
+          .map(
+            (option) =>
+              `<option value="${option.value}">${option.label}</option>`,
+          )
+          .join("");
+        typeSelect.value = config.value_type || "auto";
 
-            coreSelect.addEventListener('change', () => syncRuleRow(row, false));
-            modeSelect.addEventListener('change', () => syncRuleRow(row, true));
+        modeSelect.innerHTML = "";
+        swiSelect.innerHTML = "";
 
-            removeButton.addEventListener('click', () => {
-                if (matchRulesList.querySelectorAll('.match-rule-row').length === 1) {
-                    setStatus('Keep at least one match pair. Add another pair before removing this one.', 'error');
-                    return;
-                }
+        coreSelect.addEventListener("change", () => syncRuleRow(row, false));
+        typeSelect.addEventListener("change", () => syncRuleRow(row, true));
+        modeSelect.addEventListener("change", () => syncRuleRow(row, true));
 
-                row.remove();
-                updateSubmitAvailability();
-            });
+        removeButton.addEventListener("click", () => {
+          if (matchRulesList.querySelectorAll(".match-rule-row").length === 1) {
+            setStatus(
+              "Keep at least one match pair. Add another pair before removing this one.",
+              "error",
+            );
+            return;
+          }
 
-            syncRuleRow(row, false);
+          row.remove();
+          updateSubmitAvailability();
+        });
 
-            if (config.swi_column) {
-                swiSelect.value = config.swi_column;
-            }
+        syncRuleRow(row, false);
 
-            if (config.match_mode) {
-                modeSelect.value = config.match_mode;
-                syncRuleRow(row, true);
-            }
-
-            if (config.tolerance !== undefined) {
-                row.querySelector('.interval-input').value = config.tolerance;
-            }
-
-            return row;
+        if (config.value_type) {
+          typeSelect.value = config.value_type;
+          syncRuleRow(row, true);
         }
 
-        function updateSubmitAvailability() {
-            const rows = Array.from(matchRulesList.querySelectorAll('.match-rule-row'));
-            const hasValidRows = rows.length > 0 && rows.every((row) => {
-                const errorVisible = !row.querySelector('.row-error').classList.contains('hidden');
-                const coreValue = row.querySelector('.core-select').value;
-                const swiValue = row.querySelector('.swi-select').value;
-                return coreValue && swiValue && !errorVisible;
-            });
-
-            setSubmitEnabled(Boolean(state.analysis) && hasValidRows);
+        if (config.swi_column) {
+          swiSelect.value = config.swi_column;
         }
 
-        function addRuleRow(config = {}) {
-            const row = createRuleRow(config);
-            matchRulesList.appendChild(row);
-            updateSubmitAvailability();
+        if (config.match_mode) {
+          modeSelect.value = config.match_mode;
+          syncRuleRow(row, true);
         }
 
-        function renderAnalysis(data) {
-            state.analysis = data;
-            analysisPanel.classList.remove('hidden');
-            analysisBadge.classList.remove('hidden');
+        if (config.tolerance !== undefined) {
+          row.querySelector(".interval-input").value = config.tolerance;
+        }
 
-            renderSuggestions(data.suggestions || []);
+        return row;
+      }
 
-            matchRulesList.innerHTML = '';
+      function updateSubmitAvailability() {
+        const rows = Array.from(
+          matchRulesList.querySelectorAll(".match-rule-row"),
+        );
+        const hasValidRows =
+          rows.length > 0 &&
+          rows.every((row) => {
+            const errorVisible = !row
+              .querySelector(".row-error")
+              .classList.contains("hidden");
+            const coreValue = row.querySelector(".core-select").value;
+            const swiValue = row.querySelector(".swi-select").value;
+            return coreValue && swiValue && !errorVisible;
+          });
 
-            const firstSuggestion = (data.suggestions || [])[0];
-            addRuleRow(firstSuggestion ? {
+        setSubmitEnabled(Boolean(state.analysis) && hasValidRows);
+      }
+
+      function addRuleRow(config = {}) {
+        const row = createRuleRow(config);
+        matchRulesList.appendChild(row);
+        updateSubmitAvailability();
+      }
+
+      function renderAnalysis(data) {
+        state.analysis = data;
+        analysisPanel.classList.remove("hidden");
+        analysisBadge.classList.remove("hidden");
+
+        renderSuggestions(data.suggestions || []);
+
+        matchRulesList.innerHTML = "";
+
+        const firstSuggestion = (data.suggestions || [])[0];
+        addRuleRow(
+          firstSuggestion
+            ? {
                 core_column: firstSuggestion.core_column,
                 swi_column: firstSuggestion.swi_column,
-                match_mode: 'exact',
+                match_mode: "exact",
                 tolerance: 1,
-            } : {});
+              }
+            : {},
+        );
 
-            setStatus('Column analysis complete. Add or adjust column pairs, then run the report when ready.', 'success');
-            updateSubmitAvailability();
-        }
+        setStatus(
+          "Column analysis complete. Add or adjust column pairs, then run the report when ready.",
+          "success",
+        );
+        updateSubmitAvailability();
+      }
 
-        function resetAnalysis() {
-            state.analysis = null;
-            analysisPanel.classList.add('hidden');
-            analysisBadge.classList.add('hidden');
-            matchRulesList.innerHTML = '';
-            topSuggestion.textContent = '';
-            suggestionReason.textContent = '';
-            suggestionList.innerHTML = '';
-            setSubmitEnabled(false);
-            clearStatus();
-        }
-
-        function updateFileName(input, target) {
-            target.textContent = input.files[0] ? input.files[0].name : 'No file selected';
-            resetAnalysis();
-        }
-
-        function collectMatchRules() {
-            return Array.from(matchRulesList.querySelectorAll('.match-rule-row')).map((row) => {
-                const coreColumn = row.querySelector('.core-select').value;
-                const swiColumn = row.querySelector('.swi-select').value;
-                const matchMode = row.querySelector('.mode-select').value;
-                const intervalInput = row.querySelector('.interval-input');
-                const selectedType = row.dataset.matchType;
-                const tolerance = matchMode === 'integer_tolerance' || matchMode === 'date_tolerance' ? Number(intervalInput.value || 0) : 0;
-
-                return {
-                    core_column: coreColumn,
-                    swi_column: swiColumn,
-                    match_mode: matchMode,
-                    tolerance: Number.isFinite(tolerance) ? tolerance : 0,
-                    value_type: selectedType,
-                };
-            });
-        }
-
-        coreFileInput.addEventListener('change', () => updateFileName(coreFileInput, coreFileName));
-        swiFileInput.addEventListener('change', () => updateFileName(swiFileInput, swiFileName));
-
-        analyzeBtn.addEventListener('click', async () => {
-            if (!backendAvailable) {
-                setStatus('Backend is not configured in this live deployment. The page is published successfully, but analysis requires the FastAPI server.', 'error');
-                return;
-            }
-
-            const coreFile = coreFileInput.files[0];
-            const swiFile = swiFileInput.files[0];
-
-            if (!coreFile || !swiFile) {
-                setStatus('Please upload both CSV files before analyzing columns.', 'error');
-                return;
-            }
-
-            analyzeBtn.disabled = true;
-            analyzeText.textContent = 'Analyzing...';
-            analyzeSpinner.classList.remove('hidden');
-            clearStatus();
-
-            const formData = new FormData();
-            formData.append('core_file', coreFile);
-            formData.append('swi_file', swiFile);
-
-            try {
-                const response = await fetch(`${apiBase}/api/analyze`, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!response.ok) {
-                    const errorBody = await response.json().catch(() => ({}));
-                    throw new Error(errorBody.detail || 'Column analysis failed');
-                }
-
-                const data = await response.json();
-                renderAnalysis(data);
-            } catch (error) {
-                setStatus(error.message || 'An error occurred during analysis.', 'error');
-                console.error(error);
-            } finally {
-                analyzeBtn.disabled = false;
-                analyzeText.textContent = 'Analyze columns';
-                analyzeSpinner.classList.add('hidden');
-            }
-        });
-
-        addRuleBtn.addEventListener('click', () => {
-            if (!state.analysis) {
-                setStatus('Analyze the files first, then add more match pairs.', 'error');
-                return;
-            }
-
-            addRuleRow();
-        });
-
-        matchRulesList.addEventListener('change', updateSubmitAvailability);
-        matchRulesList.addEventListener('input', updateSubmitAvailability);
-
-        uploadForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            if (!backendAvailable) {
-                setStatus('Backend is not configured in this live deployment. The page is published successfully, but reconciliation requires the FastAPI server.', 'error');
-                return;
-            }
-
-            const coreFile = coreFileInput.files[0];
-            const swiFile = swiFileInput.files[0];
-
-            if (!state.analysis) {
-                setStatus('Run column analysis first so you can confirm the match pairs.', 'error');
-                return;
-            }
-
-            const rules = collectMatchRules();
-            const hasInvalidRule = rules.some((rule) => !rule.core_column || !rule.swi_column);
-
-            if (!rules.length || hasInvalidRule) {
-                setStatus('Choose a valid column pair for every match row.', 'error');
-                return;
-            }
-
-            submitBtn.disabled = true;
-            btnText.textContent = 'Processing data...';
-            loadingSpinner.classList.remove('hidden');
-            setStatus('Generating the reconciliation report...', 'neutral');
-
-            const formData = new FormData();
-            formData.append('core_file', coreFile);
-            formData.append('swi_file', swiFile);
-            formData.append('match_rules', JSON.stringify(rules));
-            formData.append('format_type', formatType.value);
-
-            try {
-                const response = await fetch(`${apiBase}/api/reconcile`, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!response.ok) {
-                    const errorBody = await response.json().catch(() => ({}));
-                    throw new Error(errorBody.detail || 'Processing failed');
-                }
-
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'Reconciliation_Report.xlsx';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-                setStatus('Reconciliation report downloaded.', 'success');
-            } catch (error) {
-                setStatus(error.message || 'An error occurred during reconciliation.', 'error');
-                console.error(error);
-            } finally {
-                submitBtn.disabled = false;
-                btnText.textContent = 'Run reconciliation';
-                loadingSpinner.classList.add('hidden');
-            }
-        });
-
+      function resetAnalysis() {
+        state.analysis = null;
+        analysisPanel.classList.add("hidden");
+        analysisBadge.classList.add("hidden");
+        matchRulesList.innerHTML = "";
+        topSuggestion.textContent = "";
+        suggestionReason.textContent = "";
+        suggestionList.innerHTML = "";
         setSubmitEnabled(false);
+        clearStatus();
+      }
+
+      function updateFileName(input, target) {
+        target.textContent = input.files[0]
+          ? input.files[0].name
+          : "No file selected";
+        resetAnalysis();
+      }
+
+      function collectMatchRules() {
+        return Array.from(
+          matchRulesList.querySelectorAll(".match-rule-row"),
+        ).map((row) => {
+          const coreColumn = row.querySelector(".core-select").value;
+          const swiColumn = row.querySelector(".swi-select").value;
+          const matchMode = row.querySelector(".mode-select").value;
+          const intervalInput = row.querySelector(".interval-input");
+          const coreTypeSelect = row.querySelector(".type-select");
+          const selectedType = row.dataset.matchType;
+          const selectedCoreType = coreTypeSelect
+            ? coreTypeSelect.value
+            : "auto";
+          const selectedSwiType =
+            getColumnType("swi", swiColumn) || selectedType || "text";
+          const tolerance =
+            matchMode === "integer_tolerance" || matchMode === "date_tolerance"
+              ? Number(intervalInput.value || 0)
+              : 0;
+
+          return {
+            core_column: coreColumn,
+            swi_column: swiColumn,
+            match_mode: matchMode,
+            tolerance: Number.isFinite(tolerance) ? tolerance : 0,
+            value_type: selectedType,
+            core_value_type:
+              selectedCoreType === "auto" ? selectedType : selectedCoreType,
+            swi_value_type: selectedSwiType,
+          };
+        });
+      }
+
+      coreFileInput.addEventListener("change", () =>
+        updateFileName(coreFileInput, coreFileName),
+      );
+      swiFileInput.addEventListener("change", () =>
+        updateFileName(swiFileInput, swiFileName),
+      );
+
+      analyzeBtn.addEventListener("click", async () => {
+        if (!backendAvailable) {
+          setStatus(
+            "Backend is not configured in this live deployment. The page is published successfully, but analysis requires the FastAPI server.",
+            "error",
+          );
+          return;
+        }
+
+        const coreFile = coreFileInput.files[0];
+        const swiFile = swiFileInput.files[0];
+
+        if (!coreFile || !swiFile) {
+          setStatus(
+            "Please upload both CSV files before analyzing columns.",
+            "error",
+          );
+          return;
+        }
+
+        analyzeBtn.disabled = true;
+        analyzeText.textContent = "Analyzing...";
+        analyzeSpinner.classList.remove("hidden");
+        clearStatus();
+
+        const formData = new FormData();
+        formData.append("core_file", coreFile);
+        formData.append("swi_file", swiFile);
+
+        try {
+          const response = await fetch(`${apiBase}/api/analyze`, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorBody = await response.json().catch(() => ({}));
+            throw new Error(errorBody.detail || "Column analysis failed");
+          }
+
+          const data = await response.json();
+          renderAnalysis(data);
+        } catch (error) {
+          setStatus(
+            error.message || "An error occurred during analysis.",
+            "error",
+          );
+          console.error(error);
+        } finally {
+          analyzeBtn.disabled = false;
+          analyzeText.textContent = "Analyze columns";
+          analyzeSpinner.classList.add("hidden");
+        }
+      });
+
+      addRuleBtn.addEventListener("click", () => {
+        if (!state.analysis) {
+          setStatus(
+            "Analyze the files first, then add more match pairs.",
+            "error",
+          );
+          return;
+        }
+
+        addRuleRow();
+      });
+
+      matchRulesList.addEventListener("change", updateSubmitAvailability);
+      matchRulesList.addEventListener("input", updateSubmitAvailability);
+
+      uploadForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        if (!backendAvailable) {
+          setStatus(
+            "Backend is not configured in this live deployment. The page is published successfully, but reconciliation requires the FastAPI server.",
+            "error",
+          );
+          return;
+        }
+
+        const coreFile = coreFileInput.files[0];
+        const swiFile = swiFileInput.files[0];
+
+        if (!state.analysis) {
+          setStatus(
+            "Run column analysis first so you can confirm the match pairs.",
+            "error",
+          );
+          return;
+        }
+
+        const rules = collectMatchRules();
+        const hasInvalidRule = rules.some(
+          (rule) => !rule.core_column || !rule.swi_column,
+        );
+
+        if (!rules.length || hasInvalidRule) {
+          setStatus("Choose a valid column pair for every match row.", "error");
+          return;
+        }
+
+        submitBtn.disabled = true;
+        btnText.textContent = "Processing data...";
+        loadingSpinner.classList.remove("hidden");
+        setStatus("Generating the reconciliation report...", "neutral");
+
+        const formData = new FormData();
+        formData.append("core_file", coreFile);
+        formData.append("swi_file", swiFile);
+        formData.append("match_rules", JSON.stringify(rules));
+        formData.append("format_type", formatType.value);
+
+        try {
+          const response = await fetch(`${apiBase}/api/reconcile`, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorBody = await response.json().catch(() => ({}));
+            throw new Error(errorBody.detail || "Processing failed");
+          }
+
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "Reconciliation_Report.xlsx";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+          setStatus("Reconciliation report downloaded.", "success");
+        } catch (error) {
+          setStatus(
+            error.message || "An error occurred during reconciliation.",
+            "error",
+          );
+          console.error(error);
+        } finally {
+          submitBtn.disabled = false;
+          btnText.textContent = "Run reconciliation";
+          loadingSpinner.classList.add("hidden");
+        }
+      });
+
+      setSubmitEnabled(false);
     </script>
-</body>
+  </body>
 </html>
